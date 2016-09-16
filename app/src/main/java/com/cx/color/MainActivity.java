@@ -65,11 +65,10 @@ public class MainActivity extends AppCompatActivity {
                         b = temp & 0xff;
                         if (toast == null) {
                             toast = Toast.makeText(mainActivity, "r:" + r + "   g:" + g + "   b:" + b, Toast.LENGTH_SHORT);
-                            toast.show();
                         } else {
                             toast.setText("r:" + r + "   g:" + g + "   b:" + b);
-                            toast.show();
                         }
+                        toast.show();
                     }
 
                     @Override
