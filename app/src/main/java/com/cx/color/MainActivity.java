@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cx.target.FinalData;
 import com.cx.utils.ScaleImage;
@@ -31,47 +32,56 @@ public class MainActivity extends AppCompatActivity {
     private static final int UPDATE_IMAGE = 11;
     private ImageView imageView;
     private static int[] colors;
-    MyHandler myHandler=new MyHandler(MainActivity.this);
-//    Handler handler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            if (msg.what == UPDATE_IMAGE) {
-//                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.recycler_home, null);
-//                RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv);
-//                LinearLayoutManager lm = new LinearLayoutManager(MainActivity.this);
-//                lm.setOrientation(LinearLayoutManager.HORIZONTAL);
-//                recyclerView.setLayoutManager(lm);
-//                recyclerView.setAdapter(new MyAdapter());
-//                new AlertDialog.Builder(MainActivity.this)
-//                        .setView(view).create().show();
-//            }
-//        }
-//    };
+    MyHandler myHandler = new MyHandler(MainActivity.this);
 
     /**
      * 通过静态内部类+弱应用来解决Handler可能存在的内存泄漏问题
      */
-    static class MyHandler extends Handler{
-        WeakReference<MainActivity>mWeakReference;
-        MyHandler(MainActivity activity){
-            mWeakReference= new WeakReference<>(activity);
+    static class MyHandler extends Handler {
+        WeakReference<MainActivity> mWeakReference;
+        Toast toast;
+
+        MyHandler(MainActivity activity) {
+            mWeakReference = new WeakReference<>(activity);
         }
+
         @Override
         public void handleMessage(Message msg) {
-            MainActivity mainActivity=mWeakReference.get();
-            if (mainActivity!=null&&msg.what == UPDATE_IMAGE) {
+            final MainActivity mainActivity = mWeakReference.get();
+            if (mainActivity != null && msg.what == UPDATE_IMAGE) {
                 View view = LayoutInflater.from(mainActivity).inflate(R.layout.recycler_home, null);
                 RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv);
                 LinearLayoutManager lm = new LinearLayoutManager(mainActivity);
                 lm.setOrientation(LinearLayoutManager.HORIZONTAL);
                 recyclerView.setLayoutManager(lm);
                 recyclerView.setAdapter(mainActivity.new MyAdapter());
+                recyclerView.addOnItemTouchListener(new RecycleViewClickListener(recyclerView, new RecycleViewClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int postion) {
+                        int temp = colors[postion];
+                        int r, g, b;
+                        r = temp >> 16 & 0xff;
+                        g = temp >> 8 & 0xff;
+                        b = temp & 0xff;
+                        if (toast == null) {
+                            toast = Toast.makeText(mainActivity, "r:" + r + "   g:" + g + "   b:" + b, Toast.LENGTH_SHORT);
+                            toast.show();
+                        } else {
+                            toast.setText("r:" + r + "   g:" + g + "   b:" + b);
+                            toast.show();
+                        }
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int postion) {
+
+                    }
+                }));
                 new AlertDialog.Builder(mainActivity)
                         .setView(view).create().show();
             }
         }
     }
-
 
 
     @Override
