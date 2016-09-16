@@ -24,27 +24,55 @@ import com.cx.target.FinalData;
 import com.cx.utils.ScaleImage;
 
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE = 1;
     private static final int UPDATE_IMAGE = 11;
     private ImageView imageView;
     private static int[] colors;
-    Handler handler = new Handler() {
+    MyHandler myHandler=new MyHandler(MainActivity.this);
+//    Handler handler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            if (msg.what == UPDATE_IMAGE) {
+//                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.recycler_home, null);
+//                RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv);
+//                LinearLayoutManager lm = new LinearLayoutManager(MainActivity.this);
+//                lm.setOrientation(LinearLayoutManager.HORIZONTAL);
+//                recyclerView.setLayoutManager(lm);
+//                recyclerView.setAdapter(new MyAdapter());
+//                new AlertDialog.Builder(MainActivity.this)
+//                        .setView(view).create().show();
+//            }
+//        }
+//    };
+
+    /**
+     * 通过静态内部类+弱应用来解决Handler可能存在的内存泄漏问题
+     */
+    static class MyHandler extends Handler{
+        WeakReference<MainActivity>mWeakReference;
+        MyHandler(MainActivity activity){
+            mWeakReference= new WeakReference<>(activity);
+        }
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == UPDATE_IMAGE) {
-                View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.recycler_home, null);
+            MainActivity mainActivity=mWeakReference.get();
+            if (mainActivity!=null&&msg.what == UPDATE_IMAGE) {
+                View view = LayoutInflater.from(mainActivity).inflate(R.layout.recycler_home, null);
                 RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv);
-                LinearLayoutManager lm = new LinearLayoutManager(MainActivity.this);
+                LinearLayoutManager lm = new LinearLayoutManager(mainActivity);
                 lm.setOrientation(LinearLayoutManager.HORIZONTAL);
                 recyclerView.setLayoutManager(lm);
-                recyclerView.setAdapter(new MyAdapter());
-                new AlertDialog.Builder(MainActivity.this)
+                recyclerView.setAdapter(mainActivity.new MyAdapter());
+                new AlertDialog.Builder(mainActivity)
                         .setView(view).create().show();
             }
         }
-    };
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             colors = FinalData.getColor(pixels, pixels.length);
-                            handler.sendEmptyMessage(UPDATE_IMAGE);
+                            myHandler.sendEmptyMessage(UPDATE_IMAGE);
                         }
                     };
                     t1.start();
@@ -132,5 +160,11 @@ public class MainActivity extends AppCompatActivity {
                 tv = (TextView) itemView.findViewById(R.id.rv_item);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        myHandler.removeCallbacksAndMessages(null);
     }
 }
