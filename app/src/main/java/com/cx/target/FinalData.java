@@ -1,7 +1,10 @@
 package com.cx.target;
 
 
+import android.os.Handler;
+
 import com.cx.cluster.QuickCluster;
+import com.cx.color.MainActivity;
 import com.cx.format.Recognition;
 import com.cx.source.Color;
 import com.cx.source.ColorHistogram;
@@ -18,11 +21,11 @@ public class FinalData {
      * @param len 像素总数
      * @return
      */
-    public static int[] getColor(int[] pixels,int len) {
+    public static int[] getColor(int[] pixels, int len, Handler handler) {
         if (pixels.length!=len) len=pixels.length;
         ColorHistogram colorHistogram = new ColorHistogram();
         Color[]colors=colorHistogram.init(pixels);
-        pixels=null;
+        handler.sendEmptyMessage(MainActivity.CLEAR_DATA);
         QuickCluster dbscan=new QuickCluster();
         Recognition recognition=new Recognition(16, dbscan);
        Color[]data=recognition.recognition(colors,len);

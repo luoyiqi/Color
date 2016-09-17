@@ -14,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.LoginFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,8 +32,12 @@ import java.lang.ref.WeakReference;
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE = 1;
     private static final int UPDATE_IMAGE = 11;
+    public static final int CLEAR_DATA=0;
     private ImageView imageView;
     private static int[] colors;
+    private Bitmap bitmap;
+    private  int[] pixels;
+
     MyHandler myHandler = new MyHandler(MainActivity.this);
 
     /**
@@ -48,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             final MainActivity mainActivity = mWeakReference.get();
+            if (mainActivity!=null&&mainActivity.pixels!=null&&msg.what==CLEAR_DATA){
+                mainActivity.pixels=null;
+            }
             if (mainActivity != null && msg.what == UPDATE_IMAGE) {
                 View view = LayoutInflater.from(mainActivity).inflate(R.layout.recycler_home, null);
                 RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv);
@@ -122,17 +131,9 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedContent = data.getData();
             if (requestCode == REQUEST_IMAGE) {
                 try {
-                    Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedContent));
+                    bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedContent));
                     imageView.setImageBitmap(bitmap);
-                    final int[] pixels = ScaleImage.getPixels(bitmap);
-                    Thread t1 = new Thread() {
-                        @Override
-                        public void run() {
-                            colors = FinalData.getColor(pixels, pixels.length);
-                            myHandler.sendEmptyMessage(UPDATE_IMAGE);
-                        }
-                    };
-                    t1.start();
+                    startInitData();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -143,6 +144,19 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    private void startInitData() {
+        pixels = ScaleImage.getPixels(bitmap);
+        Thread t1 = new Thread() {
+            @Override
+            public void run() {
+                colors = FinalData.getColor(pixels, pixels.length,myHandler);
+                myHandler.sendEmptyMessage(UPDATE_IMAGE);
+            }
+        };
+        t1.start();
+    }
+
 
     class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
