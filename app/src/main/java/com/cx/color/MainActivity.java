@@ -14,8 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.LoginFilter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedContent = data.getData();
             if (requestCode == REQUEST_IMAGE) {
                 try {
+                    if (bitmap!=null)bitmap.recycle();
                     bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedContent));
                     imageView.setImageBitmap(bitmap);
                     startInitData();
