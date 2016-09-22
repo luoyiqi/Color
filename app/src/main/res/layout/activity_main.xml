@@ -5,19 +5,25 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context="com.cx.color.MainActivity">
+   <FrameLayout
+       android:id="@+id/content_frame"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_above="@+id/item_frame"
+       >
 
-    <ImageView
-        android:contentDescription="@string/picture"
-        android:id="@+id/iv"
-        android:layout_width="wrap_content"
-        android:layout_height="250dp"
-        />
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+       <android.support.design.widget.FloatingActionButton
+           android:id="@+id/fab"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_margin="16dp"
+           android:layout_gravity="bottom|end"
+           android:src="@android:drawable/ic_input_add" />
+   </FrameLayout>
+    <FrameLayout
+        android:id="@+id/item_frame"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:src="@android:drawable/ic_input_add" />
+        android:layout_width="match_parent"
+        android:layout_height="56dp"/>
+
 </RelativeLayout>
